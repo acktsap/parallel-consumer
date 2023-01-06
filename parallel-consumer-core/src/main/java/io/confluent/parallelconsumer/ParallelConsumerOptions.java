@@ -1,10 +1,12 @@
 package io.confluent.parallelconsumer;
 
 /*-
- * Copyright (C) 2020-2022 Confluent, Inc.
+ * Copyright (C) 2020-2023 Confluent, Inc.
  */
 
 import io.confluent.parallelconsumer.internal.AbstractParallelEoSStreamProcessor;
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Metrics;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.ToString;
@@ -13,6 +15,7 @@ import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.common.annotation.InterfaceStability;
+import org.apache.kafka.common.metrics.MetricsReporter;
 
 import java.time.Duration;
 import java.util.Objects;
@@ -381,6 +384,9 @@ public class ParallelConsumerOptions<K, V> {
 
     @Builder.Default
     private final int maxFailureHistory = 10;
+
+    @Builder.Default
+    private final MeterRegistry meterRegistry = Metrics.globalRegistry;
 
     /**
      * @return the combined target of the desired concurrency by the configured batch size

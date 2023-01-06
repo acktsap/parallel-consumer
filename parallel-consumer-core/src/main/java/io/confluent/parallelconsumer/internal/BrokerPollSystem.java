@@ -1,7 +1,7 @@
 package io.confluent.parallelconsumer.internal;
 
 /*-
- * Copyright (C) 2020-2022 Confluent, Inc.
+ * Copyright (C) 2020-2023 Confluent, Inc.
  */
 
 import io.confluent.parallelconsumer.ParallelConsumerOptions;
@@ -54,6 +54,8 @@ public class BrokerPollSystem<K, V> implements OffsetCommitter {
 
     private Optional<ConsumerOffsetCommitter<K, V>> committer = Optional.empty();
 
+    private final MetricReporter metricReporter;
+
     /**
      * Note how this relates to {@link BrokerPollSystem#getLongPollTimeout()} - if longPollTimeout is high and loading
      * factor is low, there may not be enough messages queued up to satisfy demand.
@@ -76,6 +78,8 @@ public class BrokerPollSystem<K, V> implements OffsetCommitter {
                 committer = Optional.of(consumerCommitter);
             }
         }
+
+        this.metricReporter = new MetricReporter(options.getMeterRegistry());
     }
 
     public void start(String managedExecutorService) {
@@ -140,6 +144,8 @@ public class BrokerPollSystem<K, V> implements OffsetCommitter {
             var polledRecords = pollBrokerForRecords();
             int count = polledRecords.count();
             log.debug("Got {} records in poll result", count);
+
+            this.metricReporter.reportRecordPollCount(count);
 
             if (count > 0) {
                 log.trace("Loop: Register work");

@@ -1,7 +1,7 @@
 package io.confluent.parallelconsumer.internal;
 
 /*-
- * Copyright (C) 2020-2022 Confluent, Inc.
+ * Copyright (C) 2020-2023 Confluent, Inc.
  */
 
 import io.confluent.parallelconsumer.*;
@@ -73,7 +73,7 @@ public class ProducerManager<K, V> extends AbstractOffsetCommitter<K, V> impleme
                            ConsumerManager<K, V> newConsumer,
                            WorkManager<K, V> wm,
                            ParallelConsumerOptions<K, V> options) {
-        super(newConsumer, wm);
+        super(newConsumer, wm, options);
         this.producerWrapper = newProducer;
         this.options = options;
 
