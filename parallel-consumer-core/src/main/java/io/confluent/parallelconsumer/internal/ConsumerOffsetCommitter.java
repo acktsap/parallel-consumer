@@ -1,7 +1,7 @@
 package io.confluent.parallelconsumer.internal;
 
 /*-
- * Copyright (C) 2020-2022 Confluent, Inc.
+ * Copyright (C) 2020-2023 Confluent, Inc.
  */
 
 import io.confluent.parallelconsumer.ParallelConsumerOptions;
@@ -52,8 +52,11 @@ public class ConsumerOffsetCommitter<K, V> extends AbstractOffsetCommitter<K, V>
      */
     private final BlockingQueue<CommitResponse> commitResponseQueue = new LinkedBlockingQueue<>();
 
-    public ConsumerOffsetCommitter(final ConsumerManager<K, V> newConsumer, final WorkManager<K, V> newWorkManager, final ParallelConsumerOptions options) {
-        super(newConsumer, newWorkManager);
+    public ConsumerOffsetCommitter(final ConsumerManager<K, V> newConsumer,
+                                   final WorkManager<K, V> newWorkManager,
+                                   final ParallelConsumerOptions<K, V> options) {
+        super(newConsumer, newWorkManager, options);
+
         commitMode = options.getCommitMode();
         commitTimeout = options.getOffsetCommitTimeout();
         if (commitMode.equals(PERIODIC_TRANSACTIONAL_PRODUCER)) {

@@ -108,6 +108,8 @@ public abstract class AbstractParallelEoSStreamProcessor<K, V> implements Parall
     @Getter(AccessLevel.PUBLIC)
     protected final WorkManager<K, V> wm;
 
+    protected final MetricReporter metricReporter;
+
     /**
      * Collection of work waiting to be
      */
@@ -259,11 +261,13 @@ public abstract class AbstractParallelEoSStreamProcessor<K, V> implements Parall
 
         this.dynamicExtraLoadFactor = module.dynamicExtraLoadFactor();
 
-        workerThreadPool = setupWorkerPool(newOptions.getMaxConcurrency());
+        this.workerThreadPool = setupWorkerPool(newOptions.getMaxConcurrency());
 
         this.wm = module.workManager();
 
         this.brokerPollSubsystem = module.brokerPoller(this);
+
+        this.metricReporter = new MetricReporter(options.getMeterRegistry());
 
         if (options.isProducerSupplied()) {
             this.producerManager = Optional.of(module.producerManager());
@@ -275,6 +279,8 @@ public abstract class AbstractParallelEoSStreamProcessor<K, V> implements Parall
             this.producerManager = Optional.empty();
             this.committer = this.brokerPollSubsystem;
         }
+
+        setupMetrics();
     }
 
     private void validateConfiguration() {
@@ -324,6 +330,11 @@ public abstract class AbstractParallelEoSStreamProcessor<K, V> implements Parall
         if (!subscription.isEmpty() || !assignment.isEmpty()) {
             throw new IllegalStateException("Consumer subscription must be managed by the Parallel Consumer. Use " + this.getClass().getName() + "#subcribe methods instead.");
         }
+    }
+
+    private void setupMetrics() {
+        this.metricReporter.reportActiveWorkerCount(this.workerThreadPool::getActiveCount);
+        this.metricReporter.reportWorkerQueueSize(this.workerThreadPool.getQueue()::size);
     }
 
     @Override
